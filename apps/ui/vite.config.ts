@@ -7,7 +7,7 @@ import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 const config = defineConfig({
-	base: process.env.GITHUB_ACTIONS ? "/frc-pdm/" : "/",
+	base: process.env.GITHUB_ACTIONS ? "/frc-scouting/" : "/",
 	resolve: { tsconfigPaths: true },
 	plugins: [
 		devtools(),
