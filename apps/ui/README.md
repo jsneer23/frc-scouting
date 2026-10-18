@@ -1,46 +1,253 @@
-Welcome to your new TanStack Start app!
+# FRC 5507 Scouting
 
-# Getting Started
+A match scouting app for FRC. Scouts record match data on a phone or
+tablet, and the app generates a QR code that is scanned into a spreadsheet.
+No network connection is needed at the venue.
+
+Live site: <https://jsneer23.github.io/frc-scouting/>
+
+## Setup
+
+Follow the section for your operating system, then continue to
+"Install project tools".
+
+### macOS
+
+Install [Homebrew](https://brew.sh), a package manager for command-line
+software:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+The installer prints two or three commands at the end under **Next steps**.
+**Run them.** They add Homebrew to your PATH. If you skip this, the `brew`
+command will not be found in new terminal windows.
+
+Open a new terminal window and verify:
+
+```bash
+brew --version
+```
+
+Then install mise:
+
+```bash
+brew install mise
+```
+
+Add mise to your shell. Check whether the line is already there first —
+some installers add it for you:
+
+```bash
+grep mise ~/.zshrc
+```
+
+If nothing is printed, add it:
+
+```bash
+echo 'eval "$(mise activate zsh)"' >> ~/.zshrc
+```
+
+**Open a new terminal window.** The change does not apply to the window you
+are using.
+
+### Windows
+
+Windows uses WSL2, which runs Ubuntu inside Windows. This means everyone on
+the team runs the same commands, and problems are easier to solve together.
+
+Open **PowerShell as Administrator** and run:
+
+```powershell
+wsl --install
+```
+
+Restart your computer. Then open the **Ubuntu** app from the Start menu. The
+first launch asks you to create a username and password — this account is
+separate from your Windows account.
+
+**Every remaining instruction runs inside Ubuntu**, not in PowerShell or
+Command Prompt.
+
+Install Homebrew:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+Run the commands it prints under **Next steps**.
+
+Install mise and add it to your shell:
+
+```bash
+brew install mise
+echo 'eval "$(mise activate bash)"' >> ~/.bashrc
+```
+
+Note `bash`, not `zsh` — Ubuntu uses bash by default.
+
+Open a new Ubuntu window.
+
+## Install project tools
+
+mise reads `mise.toml` and installs the exact Node and pnpm versions this
+project expects. You do not install pnpm separately.
+
+```bash
+git clone https://github.com/jsneer23/frc-scouting.git
+cd frc-scouting
+mise install
+```
+
+> **Windows users:** clone into your Linux home directory
+> (`~/dev/frc-scouting`), **not** into `/mnt/c/...`. Running the project from
+> the Windows filesystem makes `pnpm install` many times slower.
+
+Verify that Node and pnpm come from mise:
+
+```bash
+which node
+which pnpm
+```
+
+You should see paths containing `mise`:
+
+```
+/Users/<username>/.local/share/mise/installs/node/24/bin/node
+/Users/<username>/.local/share/mise/installs/pnpm/12.14.0/bin/pnpm
+```
+
+If the paths do **not** contain `mise`, see
+[Conflicting version managers](#conflicting-version-managers).
+
+Finally, install dependencies:
+
+```bash
+cd apps/ui
+pnpm install
+```
+
+## mise tasks
+
+mise runs project tasks defined in `mise.toml`. Run them from the repository
+root, not from `apps/ui`.
+
+List all available tasks:
+
+```bash
+mise tasks
+```
+
+### Updating pnpm
+
+The pnpm version is pinned in two files that must agree: `mise.toml` and
+`apps/ui/package.json`. If they disagree, `pnpm install` fails while trying
+to switch versions.
+
+Two tasks handle this together.
+
+**See recent versions:**
+
+```bash
+mise run pnpm:check_version
+```
+
+This prints the five newest pnpm releases.
+
+**Update to a version:**
+
+```bash
+mise run pnpm:update 12.14.0
+```
+
+The version argument is required. Without it the task fails with
+`Missing required arg: <version>`.
+
+The task updates both files, then runs `pnpm install`, `pnpm typecheck`, and
+`pnpm build` to confirm nothing broke.
+
+Commit all three changed files together:
+
+```bash
+git add mise.toml apps/ui/package.json apps/ui/pnpm-lock.yaml
+git commit -m "update pnpm to 12.14.0"
+```
+
+Committing only some of them leaves the repo in a state where the two pinned
+versions disagree.
+
+## Available Commands
+
+This project uses [Biome](https://biomejs.dev/) for linting and formatting. The following commands are available:
+
+| Command | Purpose |
+|---|---|
+| `pnpm dev` | Dev server with hot reload |
+| `pnpm typecheck` | Type check — Biome does **not** check types |
+| `pnpm build` | Production build into `dist/` |
+| `pnpm preview` | Serve the production build locally |
+| `pnpm biome check --write src/` | Format and fix lint issues |
+
+Run `pnpm typecheck` before committing. CI runs it and will fail the build.
+
+
+
+## Troubleshooting
+
+### Conflicting version managers
+
+If `which node` or `which pnpm` shows a path without `mise`, another tool is
+taking priority. The usual causes are **fnm** and a **pnpm setup block**.
+
+Check your shell config (`~/.zshrc` on macOS, `~/.bashrc` on Ubuntu):
+
+```bash
+cat ~/.zshrc
+```
+
+Delete or comment out:
+
+- any line containing `fnm env`
+- the block between `# pnpm` and `# pnpm end`
+
+Keep the mise line. Then **open a new terminal window** — `eval` in your
+current window cannot undo a PATH that is already set.
+
+### `brew: command not found`
+
+The post-install PATH commands were not run. Re-run the Homebrew installer
+and follow its **Next steps** output.
+
+### `pnpm: command not found`
+
+mise is not activated, or you did not open a new terminal after editing your
+shell config.
+
+### `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`
+
+A dependency was published too recently for pnpm's supply-chain policy. This
+is working as intended. Wait a day, or delete `apps/ui/pnpm-lock.yaml` and
+run `pnpm install` for a fresh resolution.
+
+
+## Getting Started
 
 To run this application:
 
 ```bash
-pnpm install
+cd apps/ui
 pnpm dev
 ```
 
-# Building For Production
+Open <http://localhost:3000/frc-scouting/>.
 
-To build this application for production:
-
-```bash
-pnpm build
-```
+**Note the path.** This app is served from a subdirectory on GitHub Pages,
+so the dev server uses the same path. `http://localhost:3000/` will not work.
 
 ## Styling
 
 This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-### Removing Tailwind CSS
-
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Remove `@tailwindcss/vite` and `tailwindcss` from `package.json`
-
-## Linting & Formatting
-
-This project uses [Biome](https://biomejs.dev/) for linting and formatting. The following scripts are available:
-
-
-```bash
-pnpm lint
-pnpm format
-pnpm check
-```
-
 
 
 ## Routing
@@ -72,119 +279,6 @@ Then anywhere in your JSX you can use it like so:
 This will create a link that will navigate to the `/about` route.
 
 More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
 
 
 # Learn More
