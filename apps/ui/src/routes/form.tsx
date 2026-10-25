@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ScoutingForm } from "@/scouting/ScoutingForm";
 
-export const Route = createFileRoute("/scouting")({
+export const Route = createFileRoute("/form")({
 	component: RouteComponent,
 });
 
